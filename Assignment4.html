@@ -1,0 +1,169 @@
+<html>
+    
+    <head><title>Cable Networks</title></head>
+   <style>
+       
+       .div
+       {
+            height: 175px; 
+           align-content: center;
+       }
+    </style>
+<body>
+    <div align="center" >
+    <h4> Enter URL for Company List XML File</h1>
+     <form>
+         <input type="text" id="textbox" size="20" />
+         <br/>
+         <input type="submit" value="SubmitQuery" id="submit" onclick="load()" />
+         </form>
+    </div>
+        
+    
+          <script>
+              
+              function load()
+              {
+                  //error conditions
+                 xmlval=document.getElementById("textbox").value;
+                 if(xmlval == "")
+                 {
+                     alert("No filename entered.");
+                 }
+                  else
+                  {
+                    
+                  var xmlhttp,xmlval, xmlresponse, newwin, header, network, owner, feeds, notes, home, logo, html_text;
+                 
+                  xmlval=document.getElementById("textbox").value;
+                    try
+                    {
+                        if (window.XMLHttpRequest) {
+                        xmlhttp = new XMLHttpRequest();
+                    } else {
+                        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                    }
+                  
+                   
+                      xmlhttp.open('GET', xmlval,false);
+                      xmlhttp.send();
+                      xmlresponse= xmlhttp.responseXML;
+                        
+                        try 
+                {                    
+                    xmlParseFile=document.implementation.createDocument("","",null);
+                    xmlParseFile.async=false;
+                    xmlParseFile.load(xmlval);
+                    if (xmlParseFile.documentElement.nodeName=="parsererror")
+                        {
+                                alert("Error: XML is NOT well formed");
+                                return false;
+                        }
+                }
+                catch(e)
+                {
+                    alert(e.message);
+                }
+                    }
+                          catch(e)
+                      {
+                          alert("XML File doesnt exist!");
+                          return;
+                      }
+                 
+                     
+                  /*Creating table*/
+                
+                  newwin=window.open("","","scrollbars=yes, width=900, height=900");
+                       
+                        
+                      
+                  header=xmlresponse.getElementsByTagName("Data");
+                  network=xmlresponse.getElementsByTagName("Network");
+                  owner=xmlresponse.getElementsByTagName("Owner");
+                  feeds=xmlresponse.getElementsByTagName("Feeds");
+                  notes=xmlresponse.getElementsByTagName("Notes");
+                  home=xmlresponse.getElementsByTagName("HomePage");
+                  logo=xmlresponse.getElementsByTagName("Logo");
+                   html_text="";
+                   html_text+="<table border=2>";
+
+                     for(var i=0;i<header.length;i++)   // Table header
+            {
+                html_text+="<th>";
+                html_text+=header[i].childNodes[0].nodeValue;
+                html_text+="</th>";
+            }
+                  for(var k=0;k<3;k++) //Repeating the content
+                  {
+         
+        
+                
+            for(var i=0;i<network.length;i++)   
+            {
+                html_text+="<tr>";
+                html_text+="<td>";
+               if(network[i].childNodes.length>0)   
+               {
+                   html_text+=network[i].childNodes[0].nodeValue;
+               }
+                   
+                html_text+="</td>";
+                html_text+="<td>";
+                if(owner[i].childNodes.length>0)
+                {
+                    html_text+=owner[i].childNodes[0].nodeValue;
+                }
+                html_text+="</td>";
+                html_text+="<td>";
+                html_text+="<ul>";
+                for(var j=0;j<feeds[i].getElementsByTagName("Feed").length;j++)
+                    {
+                        html_text+="<li>";
+                        if(feeds[i].getElementsByTagName("Feed")[j].childNodes.length>0)
+                            {
+                                html_text+=feeds[i].getElementsByTagName("Feed")[j].childNodes[0].nodeValue;        
+                            }
+                        
+                        html_text+="</li>";
+                    }
+                html_text+="</ul>";
+                html_text+="</td>";
+                
+                html_text+="<td>";
+                if(notes[i].childNodes.length>0)
+                {
+                    html_text+=notes[i].childNodes[0].nodeValue;
+                }
+                html_text+="</td>";
+                html_text+="<td>";
+                if(home[i].childNodes.length>0)
+                {
+                    html_text+="<a href= "+ home[i].childNodes[0].nodeValue +"> "+home[i].childNodes[0].nodeValue + "</a>";
+                }
+                html_text+="</td>";
+                html_text+="<td>";
+                if(logo[i].childNodes.length>0)
+                {
+                    html_text+="<img src= \""+logo[i].childNodes[0].nodeValue+"\" />";
+                }
+                html_text+="</td>";
+                html_text+="</tr>";
+            }
+                  }
+             html_text+="</center></table>";
+            newwin.document.body.innerHTML=html_text;
+                  }
+                  
+   
+              }
+       
+    
+    
+    
+    </script>
+              
+    <noscript>
+    </body>
+</html>
+             

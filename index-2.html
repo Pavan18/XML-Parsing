@@ -1,0 +1,229 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- Styling -->
+    <style>
+        
+        form
+            {
+                margin-top:  23%;
+            }
+        
+    </style>
+    
+    <!-- JavaScript-->
+    
+    <script type="text/javascript">
+     
+        function isXMLValid(XMLUrl)
+        {
+            if(XMLUrl.length==0)
+                {
+                    alert("Error: No URL Specified for XML");
+                    return false;
+                }
+           if (window.XMLHttpRequest) 
+            {
+                try 
+                {                    
+                    xmlParseFile=document.implementation.createDocument("","",null);
+                    xmlParseFile.async=false;
+                    xmlParseFile.load(XMLUrl);
+                    if (xmlParseFile.documentElement.nodeName=="parsererror")
+                        {
+                                alert("Error: XML is NOT well formed:\nError Details:\n" + xmlParseFile.documentElement.childNodes[0].nodeValue);
+                                return false;
+                        }
+                }
+                catch(e)
+                {
+                    alert(e.message);
+                }
+            }
+        
+        else
+            {
+                xmlParseFile=new ActiveXObject("Microsoft.XMLDOM");
+                xmlParseFile.async=false;
+                xmlParseFile.load(XMLUrl); 
+                if (xmlParseFile.parseError.errorCode != 0)
+                {
+                     alert("Error: XML is NOT well formed:\n\nError Details:\n\n" + 
+                            xmlParseFile.parseError.line +
+                            "\nposition " + xmlParseFile.parseError.linePos +
+                            "\n\nError Code: " + xmlParseFile.parseError.errorCode +
+                            "\n\nError Reason: " + xmlParseFile.parseError.reason +
+                            "\n\nError Line: " + xmlParseFile.parseError.srcText);
+                        
+                    return false;
+                } 
+            }
+            return true;
+        }
+        
+        function isXMLEmpty(XMLRequestFile)
+        {
+            if(XMLRequestFile.getElementsByTagName("Row").length==0||XMLRequestFile.getElementsByTagName("Network").length==0)
+                {
+                    return true;
+                }
+            return false;
+        }
+        
+        function FetchXMLFromUrl()
+        {
+            var XMLRequest;
+            var XMLUrl=document.getElementById("xmlURL").value;
+            if (window.XMLHttpRequest) 
+                {
+                    XMLRequest = new XMLHttpRequest();
+                } 
+            else 
+                {
+                    XMLRequest = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+            
+           XMLRequest.open('GET', XMLUrl,false);
+            
+            try
+                {    
+                    XMLRequest.send();   
+                }
+            catch(err)
+                {
+                    
+                   alert("The given xml file does not exist or not accessible");
+                    return;
+                }
+            
+    
+            if ((XMLRequest.status==200)) 
+                {
+                    if(isXMLValid(XMLUrl)==true)
+                        {
+                            if(isXMLEmpty(XMLRequest.responseXML)==true)
+                                {
+                                    alert("Error: XML is Empty!");
+                                    return;
+                                }
+                            else
+                                {
+                                     loadTable(XMLRequest.responseXML);
+                                }
+                                
+                        }
+                    
+                   
+                }
+            else if((XMLRequest.status==404))
+                {
+                    alert("The given xml file does not exist or not accessible");
+                }
+                
+            
+           
+        }
+       
+        function loadTable(XMLFileHandler)
+        {
+            var Window_Width=800,Window_Height=600;
+            var left = (screen.width/2)-(Window_Width/2);
+            var top = (screen.height/2)-(Window_Height/2);
+            var Table_Window=window.open("", "Cable Operators", 'scrollbars=1,resizable=1,width='+Window_Width+', height='+Window_Height+', top='+top+', left='+left);
+            var TableHeaders=XMLFileHandler.getElementsByTagName("Data");
+            var NetworkNodes=XMLFileHandler.getElementsByTagName("Network");
+            var OwnerNodes=XMLFileHandler.getElementsByTagName("Owner");
+            var FeedsNodes=XMLFileHandler.getElementsByTagName("Feeds");
+             FeedNodes=XMLFileHandler.getElementsByTagName("Feed");
+            var NotesNodes=XMLFileHandler.getElementsByTagName("Notes");
+            var HomePageNodes=XMLFileHandler.getElementsByTagName("HomePage");
+            var LogoNodes=XMLFileHandler.getElementsByTagName("Logo");
+            var DocumentString="";
+            DocumentString+="<center><table border=2>";
+            for(var i=0;i<TableHeaders.length;i++)
+            {
+                DocumentString+="<th><center>";
+                DocumentString+=TableHeaders[i].childNodes[0].nodeValue;
+                DocumentString+="</center></th>";
+            }
+        
+                
+            for(var i=0;i<NetworkNodes.length;i++)
+            {
+                DocumentString+="<tr>";
+                DocumentString+="<td>";
+               if(NetworkNodes[i].childNodes.length>0)
+               {
+                   DocumentString+=NetworkNodes[i].childNodes[0].nodeValue;
+               }
+                   
+                DocumentString+="</td>";
+                DocumentString+="<td>";
+                if(OwnerNodes[i].childNodes.length>0)
+                {
+                    DocumentString+=OwnerNodes[i].childNodes[0].nodeValue;
+                }
+                DocumentString+="</td>";
+                DocumentString+="<td>";
+                DocumentString+="<ul>";
+                for(var j=0;j<FeedsNodes[i].getElementsByTagName("Feed").length;j++)
+                    {
+                        DocumentString+="<li>";
+                        if(FeedsNodes[i].getElementsByTagName("Feed")[j].childNodes.length>0)
+                            {
+                                DocumentString+=FeedsNodes[i].getElementsByTagName("Feed")[j].childNodes[0].nodeValue;        
+                            }
+                        
+                        DocumentString+="</li>";
+                    }
+                DocumentString+="</ul>";
+                DocumentString+="</td>";
+                
+                DocumentString+="<td>";
+                if(NotesNodes[i].childNodes.length>0)
+                {
+                    DocumentString+=NotesNodes[i].childNodes[0].nodeValue;
+                }
+                DocumentString+="</td>";
+                DocumentString+="<td>";
+                if(HomePageNodes[i].childNodes.length>0)
+                {
+                    DocumentString+="<a href= "+ HomePageNodes[i].childNodes[0].nodeValue +"> "+HomePageNodes[i].childNodes[0].nodeValue + "</a>";
+                }
+                DocumentString+="</td>";
+                DocumentString+="<td>";
+                if(LogoNodes[i].childNodes.length>0)
+                {
+                    DocumentString+="<img src= \""+LogoNodes[i].childNodes[0].nodeValue+"\" />";
+                }
+                DocumentString+="</td>";
+                DocumentString+="</tr>";
+            }
+            
+            DocumentString+="</center></table>";
+            Table_Window.document.body.innerHTML=DocumentString;
+   
+        }
+        
+    </script> 
+    
+   
+
+</head>
+<body>
+    
+    <form>
+        <center>
+            Enter URL for Company List XML File: 
+            <br/>
+            <br/>    
+            <input type="text" id="xmlURL" size="100"/>
+            <br/>
+            <br/>
+            <input type="submit" id="sub" onclick="FetchXMLFromUrl();"/>
+        </center>
+    </form>
+    
+</body>
+    
+</html>
